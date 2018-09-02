@@ -1,6 +1,15 @@
----
-# test-role role
-
-- hosts: test-role
+- name: apply test tasks to containers
+  hosts: all
+  # vars_prompt:
+  #   - name: "var1"
+  #     prompt: "var1"
+  #     private: no
+  #   - name: "var2"
+  #     prompt: "var2"
+  #     private: no
+  #   - name: "var3"
+  #     prompt: "var3"
+  #     private: no
+  gather_facts: true
   roles:
-    - { role: test-role }
+    - test-role
