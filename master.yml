@@ -29,7 +29,7 @@
 #     with_items: "{{ groups['lxd'] }}"
 
 - name: apply test tasks to containers
-  hosts: lxd
+  #hosts: lxd
   vars_prompt:
     - name: "var1"
       prompt: "var1"
