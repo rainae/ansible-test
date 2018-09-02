@@ -1,0 +1,4 @@
+---
+
+ansible_ssh_pass: "{{ vault_ssh_password }}"
+ansible_sudo_pass: "{{ vault_ssh_sudo_password }}"

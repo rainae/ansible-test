@@ -1,0 +1,91 @@
+---
+
+  - name: install lxd locally
+    package: 
+      name: lxd
+      state: present
+  
+  #- name: initialize lxd
+  #  raw: cat <file> | lxd init --preseed
+    # see https://discuss.linuxcontainers.org/t/usage-of-lxd-init-preseed/1069
+
+  - name: create new containers
+    # in order to be able to run docker inside, the image ubuntu:daily:16:04 needs to be used (together with parameter "-c security.nesting=true")
+    lxd_container:
+      name: "{{ item }}"
+      state: started
+      config: 
+        security.nesting: "true" 
+        security.privileged: "true"
+      source:
+        type: image 
+        mode: pull 
+        server: https://images.linuxcontainers.org
+        protocol: lxd
+        alias: ubuntu/xenial/amd64
+      profiles: ["default","docker"]
+      wait_for_ipv4_addresses: true
+      timeout: 600
+    with_items: "{{ groups['lxd'] }}"
+
+#    - name: Check if Python2 is installed in container 
+#      delegate_to: "{{item}}"
+#      raw: dpkg -s python
+#      register: python_check_is_installed
+#      failed_when: python_check_is_installed.rc not in [0,1]
+#      changed_when: false
+#      with_items: "{{ groups['lxd'] }}"
+
+#    - name: Install Python in container
+#      delegate_to: "{{item.item}}"
+#      raw: apt-get update && apt-get install -y python
+#      when: "{{item.rc == 1}}"
+#      with_item: "{{python_check_is_installed.results}}"
+
+  - name: Install Python and OpenSSH-Server in container
+    delegate_to: "{{ item }}"
+    raw: apt-get update && apt-get install -y python ssh
+    become: true 
+    become_user: root 
+    become_method: sudo 
+    with_items: "{{ groups['lxd'] }}"
+
+  - name: allow password-login to container
+    delegate_to: "{{ item }}"
+    raw: sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+    with_items: "{{ groups['lxd'] }}"
+
+  - name: restart sshd 
+    delegate_to: "{{ item }}"
+    raw: systemctl restart ssh 
+    with_items: "{{ groups['lxd'] }}"
+
+  - name: test if user ubuntu exists
+    delegate_to: "{{ item }}"
+    raw: getent passwd ubuntu
+    ignore_errors: true
+    register: user_ubuntu_exists
+    with_items: "{{ groups['lxd'] }}"
+
+  - name: debug user_ubuntu_exists
+    debug:
+      msg: "{{ user_ubuntu_exists }}"
+
+  - name: debug subvalues of registered variables 
+    debug:
+      msg: "{{ user_ubuntu_exists.results[0].rc }}"
+
+  - name: change password of user ubuntu
+    delegate_to: "{{ item }}"
+    raw: echo "ubuntu:ubuntu" | chpasswd
+    with_items: "{{ groups['lxd'] }}"
+    when: user_ubuntu_exists.results[0].rc == 0
+
+  - name: Fancy way of doing authorized_keys
+    delegate_to: "{{ item }}"
+    authorized_key: 
+      user=root
+      exclusive=no
+      key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    with_items: "{{ groups['lxd'] }}"
+      

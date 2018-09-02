@@ -1,4 +1,48 @@
 ---
 # master playbook
 
-- include: test-role.yml
+# - name: local lxd-container creation
+#   hosts: local
+#   connection: local
+#   gather_facts: true
+#   become: yes
+#   become_user: root
+#   become_method: sudo
+#   vars:
+#     group: lxd
+#   roles:
+#     - bootstrap-lxd
+
+# - hosts: local
+#   connection: local
+#   gather_facts: true
+#   become: yes
+#   become_user: root
+#   become_method: sudo
+#   vars:
+#     group: lxd
+#   tasks:
+#   - name: debug
+#     delegate_to: "{{ item }}"
+#     debug:
+#       msg: "item = {{ item }}"
+#     with_items: "{{ groups['lxd'] }}"
+
+- name: apply test tasks to containers
+  hosts: lxd
+  vars_prompt:
+    - name: "var1"
+      prompt: "var1"
+      private: no
+    - name: "var2"
+      prompt: "var2"
+      private: no
+    - name: "var3"
+      prompt: "var3"
+      private: no
+  gather_facts: true
+  roles:
+    - test-role
+
+
+  
