@@ -1,0 +1,6 @@
+---
+# test-role role
+
+- hosts: test-role
+  roles:
+    - { role: test-role }
