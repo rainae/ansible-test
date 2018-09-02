@@ -19,16 +19,16 @@
 - name: echo hostname from file
   raw: "cat /tmp/test"
 
-- name: debug vars
-  debug:
-    msg: "var1 = {{ var1 }}"
+# - name: debug vars
+#   debug:
+#     msg: "var1 = {{ var1 }}"
 
-- name: debug vars
-  debug:
-    msg: "var2 = {{ var2 }}"
+# - name: debug vars
+#   debug:
+#     msg: "var2 = {{ var2 }}"
 
-- name: debug vars
-  debug:
-    msg: "var3 = {{ var3 }}"
+# - name: debug vars
+#   debug:
+#     msg: "var3 = {{ var3 }}"
 
  
